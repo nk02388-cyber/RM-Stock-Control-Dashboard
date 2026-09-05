@@ -812,7 +812,7 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
       </div>
     </div>
     <div class="meta">
-      <span class="header-user" id="headerUserInfo">
+      <span class="header-user" id="headerUserInfo" hidden="">
         <span id="headerUserEmail">nutthawootsaipun@gmail.com</span>
         <button class="signout-btn" id="signOutBtn" type="button">ออกจากระบบ</button>
       </span>
@@ -16971,7 +16971,16 @@ userMgmtBody.addEventListener('click', async (e) => {
   loadAdminUsers();
 });
 
-initAuth();
+// Open the dashboard immediately. Authentication remains disabled for this public deployment.
+function initDashboardWithoutLogin() {
+  authOverlay.hidden = true;
+  dashboardWrap.hidden = false;
+  headerUserInfo.hidden = true;
+  tabBtnUsers.hidden = true;
+  initCloudSync();
+}
+
+initDashboardWithoutLogin();
 
 </script>
 
