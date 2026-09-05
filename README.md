@@ -16,4 +16,15 @@ Then visit `http://localhost:8080`.
 
 ## Deployment
 
-This is a static site. The dashboard uses the existing Supabase project configured in `index.html` for authentication and data access.
+This is a static site. The public deployment opens without a login screen and uses the existing Supabase project configured in `index.html` for data synchronization.
+
+## Excel export
+
+The warehouse-layout page can export a `.xlsx` workbook with four sheets:
+
+- Expired raw materials
+- All storage-location records
+- Zone summary
+- Data-format guide
+
+Each data row represents one material lot in one storage location. Dates are stored as Excel dates, quantities as numbers, and units in a separate column.
