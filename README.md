@@ -19,6 +19,7 @@ python -m http.server 8080
 ## ไฟล์หลัก
 
 - `index.html` — หน้า dashboard และ logic ทั้งหมด
+- `pk-template.css` — รูปแบบหน้าจอที่ปรับจาก PK Dashboard ให้ใช้กับข้อมูล RM
 - `netlify.toml` — การตั้งค่า deploy และ security headers
 
 ## หมายเหตุ

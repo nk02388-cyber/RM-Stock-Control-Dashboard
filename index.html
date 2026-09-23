@@ -932,6 +932,7 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
 }
 
 </style>
+<link rel="stylesheet" href="pk-template.css">
 </head>
 <body>
 
@@ -985,6 +986,7 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
 </div>
 
 <div class="wrap" id="dashboardWrap" hidden>
+  <a class="skip-link" href="#mainDashboard">ข้ามไปยังเนื้อหาหลัก</a>
 
   <header class="top no-print">
     <div class="header-brand">
@@ -1001,32 +1003,35 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
       </span>
       <span class="badge sync-connecting" id="cloudSyncBadge" title="กำลังเชื่อมต่อระบบซิงค์ข้อมูลข้ามเครื่อง">🔄 กำลังเชื่อมต่อซิงค์...</span>
       <span id="reportDate">ณ วันที่: 25 ส.ค. 69</span>
-      <button class="update-btn" id="updateStockBtn" type="button">📊 อัปเดตข้อมูล Stock (Excel)</button>
-      <input type="file" id="stockFileInput" accept=".xlsx,.xls" style="display:none">
       <button class="theme-toggle" id="themeToggle" type="button">โหมดมืด</button>
     </div>
   </header>
 
   <div id="updateStatus" class="update-status no-print" hidden></div>
 
-  <div class="tabs no-print" id="tabs">
+  <div class="nav-heading no-print">เมนู</div>
+  <div class="dashboard-layout">
+  <nav class="tabs no-print" id="tabs" aria-label="ส่วนข้อมูลแดชบอร์ด">
     <button class="tab-btn active" data-tab="stock" type="button">🧪 สต๊อกวัตถุดิบ <span class="tab-badge" id="tabBadgeStock">591</span></button>
     <button class="tab-btn" data-tab="floorplan" type="button">🗺️ ผังพื้นที่คลัง <span class="tab-badge">263</span></button>
-    <button class="tab-btn" data-tab="expired" type="button">⚠️ วัตถุดิบที่หมดอายุแล้ว <span class="tab-badge" id="tabBadgeExpired">0</span></button>
+    <button class="tab-btn" data-tab="expired" type="button">⚠️ วัตถุดิบที่หมดอายุแล้ว <span class="tab-badge critical" id="tabBadgeExpired">0</span></button>
     <button class="tab-btn" data-tab="withdraw" type="button">📤 เบิกจ่ายวัตถุดิบประจำวัน <span class="tab-badge" id="tabBadgeWithdraw">0</span></button>
     <button class="tab-btn" data-tab="receive" type="button">📥 รับวัตถุดิบเข้าคลัง <span class="tab-badge" id="tabBadgeReceive">0</span></button>
     <button class="tab-btn" data-tab="callin" type="button">📋 เรียกเข้าวัตถุดิบ (RM) <span class="tab-badge" id="tabBadgeCallIn">–</span></button>
     <button class="tab-btn" data-tab="stockdiff" type="button">📊 รายงาน Stock Diff. <span class="tab-badge" id="tabBadgeStockDiff">–</span></button>
     <button class="tab-btn" data-tab="bomsearch" type="button">🔍 ค้นหาวัตถุดิบ (BOM) <span class="tab-badge">526</span></button>
     <button class="tab-btn" data-tab="users" id="tabBtnUsers" type="button" hidden>👤 จัดการผู้ใช้</button>
-  </div>
+  </nav>
+  <main class="dashboard-content" id="mainDashboard" tabindex="-1">
 
   <!-- ============ TAB: STOCK ============ -->
   <div class="tab-pane" id="pane-stock">
 
-    <div class="filter-bar" id="stockWhFilterBar" style="justify-content:flex-start;">
+    <div class="filter-bar" id="stockWhFilterBar">
       <label for="itemWhFilter">ค้นหาคลัง</label>
       <select id="itemWhFilter"><option value="">ทั้งหมด</option></select>
+      <button class="update-btn" id="updateStockBtn" type="button">📊 อัปเดตข้อมูล Stock (Excel)</button>
+      <input type="file" id="stockFileInput" accept=".xlsx,.xls" style="display:none">
     </div>
 
     <div class="storage-summary-row" id="storageSummaryRow">
@@ -1766,6 +1771,8 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
     </div>
   </div>
 
+  </main>
+  </div>
   <footer>สร้างจากไฟล์ RM BOM.xlsx (RM list + BOM), Stock RM.xlsx (Stock RM + RMค้างรับ) และ BCL Layout RM Area.pdf (ผังพื้นที่) · Dashboard นี้เป็นข้อมูลสรุป ไม่ใช่ต้นฉบับบัญชี/ERP</footer>
 </div>
 
