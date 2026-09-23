@@ -171,6 +171,15 @@ header.top .meta { display: flex; align-items: center; justify-content: flex-end
 .storage-money-card .storage-money-value, .storage-money-card .storage-money-sub { color: #14110a; }
 .storage-money-value { font-size: clamp(25px, 2.3vw, 36px); }
 .table-scroll { max-width: 100%; border-color: var(--border); border-radius: 11px; }
+/* The old reports broke out to 100vw before the PK sidebar existed. Keep those
+   panels inside the content grid and scroll their wide tables inside the card. */
+.dashboard-content .report-panel-fullbleed {
+  width: 100%; max-width: 100%;
+  margin-left: 0; margin-right: 0;
+  border-radius: 14px;
+}
+.dashboard-content .report-panel-fullbleed .table-scroll table { min-width: 1100px; }
+.dashboard-content #expiredItemsPanel .table-scroll table { min-width: 1400px; }
 .table-scroll thead th, thead th {
   background: var(--series-1-wash); color: var(--text-secondary); font-weight: 800;
 }
