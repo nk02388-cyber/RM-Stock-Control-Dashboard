@@ -872,6 +872,7 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
 
 </style>
 <link rel="stylesheet" href="pk-template.css">
+<link rel="stylesheet" href="rm-qr.css">
 </head>
 <body>
 
@@ -900,6 +901,7 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
   <nav class="tabs no-print" id="tabs" aria-label="ส่วนข้อมูลแดชบอร์ด">
     <button class="tab-btn active" data-tab="stock" type="button">🧪 สต๊อกวัตถุดิบ <span class="tab-badge" id="tabBadgeStock">591</span></button>
     <button class="tab-btn" data-tab="floorplan" type="button">🗺️ ผังพื้นที่คลัง <span class="tab-badge">263</span></button>
+    <button class="tab-btn" data-tab="qr-labels" type="button">▦ พิมพ์ป้าย QR</button>
     <button class="tab-btn" data-tab="expired" type="button">⚠️ วัตถุดิบที่หมดอายุแล้ว <span class="tab-badge critical" id="tabBadgeExpired">0</span></button>
     <button class="tab-btn" data-tab="withdraw" type="button">📤 เบิกจ่ายวัตถุดิบประจำวัน <span class="tab-badge" id="tabBadgeWithdraw">0</span></button>
     <button class="tab-btn" data-tab="receive" type="button">📥 รับวัตถุดิบเข้าคลัง <span class="tab-badge" id="tabBadgeReceive">0</span></button>
@@ -1231,7 +1233,21 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
 
   <!-- ============ TAB: FLOORPLAN ============ -->
   <div class="tab-pane" id="pane-floorplan" hidden>
-    
+
+    <section class="panel qr-scan-panel" aria-labelledby="rmQrScanTitle">
+      <h2 id="rmQrScanTitle">▦ สแกน QR ตำแหน่งหรือวัตถุดิบ</h2>
+      <div class="panel-sub">ใช้กล้อง เครื่องอ่าน หรือพิมพ์รหัสแล้วกด Enter · การสแกนไม่เปลี่ยนยอดคงเหลือ</div>
+      <div class="qr-control-row">
+        <input id="rmQrScanInput" type="text" autocomplete="off" aria-label="รหัส QR หรือตำแหน่ง" placeholder="สแกน QR หรือพิมพ์รหัส เช่น RMLOC|A|A-01">
+        <button id="rmQrScanApply" type="button" class="update-btn">ค้นหา</button>
+        <button id="rmQrCameraStart" type="button" class="theme-toggle">เปิดกล้อง</button>
+        <button id="rmQrCameraStop" type="button" class="theme-toggle" hidden>ปิดกล้อง</button>
+        <button id="rmQrScanClear" type="button" class="theme-toggle">ล้าง</button>
+      </div>
+      <div id="rmQrCameraView" class="qr-camera" hidden></div>
+      <div id="rmQrScanStatus" class="qr-feedback" role="status" aria-live="polite"></div>
+      <div id="rmQrScanResults" class="qr-results"></div>
+    </section>
 
     <div class="panel">
       <h2>ค้นหาตำแหน่งจัดเก็บจากรหัสสินค้า</h2>
@@ -1627,6 +1643,30 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
     </div>
   </div>
 
+  <!-- ============ TAB: QR LABELS ============ -->
+  <div class="tab-pane" id="pane-qr-labels" hidden>
+    <section class="panel qr-print-panel" aria-labelledby="rmQrPrintTitle">
+      <h2 id="rmQrPrintTitle">▦ พิมพ์ป้าย QR สำหรับคลัง RM</h2>
+      <div class="panel-sub">สร้างป้ายจากตำแหน่งในผังและรหัสวัตถุดิบจริง · ป้าย RM ใช้รหัสแยกจากป้าย PK เพื่อป้องกันการสแกนข้ามคลัง</div>
+      <div class="qr-print-grid">
+        <div class="qr-print-card">
+          <h3>ป้ายตำแหน่ง</h3>
+          <label for="rmQrPrintZone">เลือกโซน</label>
+          <select id="rmQrPrintZone"></select>
+          <button id="rmQrPrintLocations" type="button" class="update-btn">พิมพ์ QR ทุกตำแหน่งในโซน</button>
+        </div>
+        <div class="qr-print-card">
+          <h3>ป้ายวัตถุดิบ</h3>
+          <label for="rmQrPrintProductCode">รหัสวัตถุดิบ</label>
+          <input id="rmQrPrintProductCode" type="text" autocomplete="off" list="rmQrProductCodes" placeholder="เช่น RM-AT-H-017">
+          <datalist id="rmQrProductCodes"></datalist>
+          <button id="rmQrPrintProduct" type="button" class="update-btn">พิมพ์ QR วัตถุดิบ</button>
+        </div>
+      </div>
+      <div id="rmQrPrintStatus" class="qr-feedback" role="status" aria-live="polite"></div>
+    </section>
+  </div>
+
   <!-- ============ TAB: BOM SEARCH ============ -->
   <div class="tab-pane" id="pane-bomsearch" hidden>
     <div class="panel">
@@ -1692,7 +1732,7 @@ function switchToTab(tab) {
   const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.dataset.tab === tab);
   if (!btn) return;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
-  ['stock', 'bom', 'floorplan', 'expired', 'withdraw', 'receive', 'callin', 'stockdiff', 'bomsearch'].forEach(t => {
+  ['stock', 'bom', 'floorplan', 'qr-labels', 'expired', 'withdraw', 'receive', 'callin', 'stockdiff', 'bomsearch'].forEach(t => {
     document.getElementById('pane-' + t).hidden = (t !== tab);
   });
 }
@@ -6033,5 +6073,9 @@ async function initCloudSync() {
 
 
 </script>
+<script src="vendor/html5-qrcode.min.js"></script>
+<script src="vendor/qrcode-generator.js"></script>
+<script src="rm-qr-core.js"></script>
+<script src="rm-qr.js"></script>
 </body>
 </html>
