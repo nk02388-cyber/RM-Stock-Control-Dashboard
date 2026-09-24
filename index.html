@@ -873,6 +873,7 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
 </style>
 <link rel="stylesheet" href="pk-template.css">
 <link rel="stylesheet" href="rm-qr.css">
+<link rel="stylesheet" href="rm-incoming.css">
 </head>
 <body>
 
@@ -902,6 +903,7 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
     <button class="tab-btn active" data-tab="stock" type="button">🧪 สต๊อกวัตถุดิบ <span class="tab-badge" id="tabBadgeStock">591</span></button>
     <button class="tab-btn" data-tab="floorplan" type="button">🗺️ ผังพื้นที่คลัง <span class="tab-badge">263</span></button>
     <button class="tab-btn" data-tab="qr-labels" type="button">▦ พิมพ์ป้าย QR</button>
+    <button class="tab-btn" data-tab="incoming" type="button">📦 รับเข้าและจัดเก็บ (QR) <span class="tab-badge" id="tabBadgeIncoming">0</span></button>
     <button class="tab-btn" data-tab="expired" type="button">⚠️ วัตถุดิบที่หมดอายุแล้ว <span class="tab-badge critical" id="tabBadgeExpired">0</span></button>
     <button class="tab-btn" data-tab="withdraw" type="button">📤 เบิกจ่ายวัตถุดิบประจำวัน <span class="tab-badge" id="tabBadgeWithdraw">0</span></button>
     <button class="tab-btn" data-tab="receive" type="button">📥 รับวัตถุดิบเข้าคลัง <span class="tab-badge" id="tabBadgeReceive">0</span></button>
@@ -1564,6 +1566,61 @@ footer { text-align:center; font-size:11px; color: var(--text-muted); padding: 2
     </div>
   </div>
 
+  <!-- ============ TAB: QR RECEIVING & PUTAWAY ============ -->
+  <div class="tab-pane" id="pane-incoming" hidden>
+    <div class="panel rm-incoming-panel">
+      <h2>📦 รับเข้าและจัดเก็บด้วย QR</h2>
+      <p class="panel-sub">ขั้นตอนจาก PK WMS ที่ปรับสำหรับคลัง RM: รับสินค้า → พิมพ์ป้ายพาเลต → สแกนป้ายและตำแหน่ง → ยืนยันจัดเก็บ การสแกนอย่างเดียวยังไม่เพิ่มยอดในผังคลัง</p>
+      <p class="rm-incoming-notice">ข้อมูลรับเข้า ป้ายพาเลต และรายการจัดเก็บบันทึกเฉพาะในเบราว์เซอร์เครื่องนี้ ไม่มีการซิงค์ข้ามเครื่อง โปรดใช้เครื่องเดิมตั้งแต่รับเข้าจนจัดเก็บ และสำรองข้อมูลผังคลังเป็นระยะ</p>
+      <div class="rm-incoming-steps">
+        <button type="button" data-incoming-view="receive" class="active">1 · รับสินค้า</button>
+        <button type="button" data-incoming-view="putaway">2 · จัดเก็บ</button>
+        <button type="button" data-incoming-view="history">3 · รายการล่าสุด</button>
+      </div>
+      <section id="rmIncomingReceive" class="rm-incoming-view">
+        <h3>รับวัตถุดิบและสร้างป้ายพาเลต</h3>
+        <form id="rmIncomingForm" class="rm-incoming-form">
+          <label>เลขที่รับเข้า <input id="rmInReceipt" required maxlength="80" autocomplete="off"></label>
+          <label>วันที่รับเข้า <input id="rmInDate" type="date" required></label>
+          <label>ผู้รับเข้า <input id="rmInReceiver" required maxlength="100"></label>
+          <label>ผู้ขาย/ผู้ส่งมอบ <input id="rmInSupplier" maxlength="100"></label>
+          <label>รหัสวัตถุดิบ / QR สินค้า <input id="rmInProduct" required list="rmInProducts" autocomplete="off"><datalist id="rmInProducts"></datalist></label>
+          <label>ชื่อวัตถุดิบ <input id="rmInName" readonly></label>
+          <label>Lot No. <input id="rmInLot" required maxlength="100"></label>
+          <label>จำนวนรวม <input id="rmInQty" type="number" min="0.001" step="0.001" required></label>
+          <label>หน่วย <input id="rmInUnit" required maxlength="30"></label>
+          <label>จำนวนพาเลต <input id="rmInCount" type="number" min="1" max="100" step="1" value="1" required></label>
+          <label>วันที่ผลิต (ถ้ามี) <input id="rmInMfg" type="date"></label>
+          <label>วันหมดอายุ (ถ้ามี) <input id="rmInExpiry" type="date"></label>
+          <label>อายุวัตถุดิบ (ถ้ามี) <input id="rmInShelf" maxlength="50" placeholder="เช่น 2 ปี"></label>
+          <div class="rm-incoming-wide" id="rmInAllocation"></div>
+          <button type="submit" class="rm-incoming-primary">บันทึกรับเข้าและสร้างป้าย QR</button>
+        </form>
+        <p id="rmInReceiveStatus" class="qr-feedback" role="status"></p>
+        <div id="rmInCreated" hidden><button id="rmInPrintCreated" type="button">🖨️ พิมพ์ป้ายชุดล่าสุด</button><button id="rmInGoPutaway" type="button">ไปจัดเก็บ →</button></div>
+      </section>
+      <section id="rmIncomingPutaway" class="rm-incoming-view" hidden>
+        <h3>สแกนป้ายพาเลตและตำแหน่ง</h3>
+        <div class="rm-incoming-form">
+          <label>QR ป้ายพาเลต (RMTAG) <input id="rmInTag" placeholder="สแกนหรือพิมพ์ RMTAG|…" autocomplete="off"></label>
+          <label>QR ตำแหน่ง (RMLOC) <input id="rmInLocation" placeholder="สแกนหรือพิมพ์ RMLOC|…" autocomplete="off"></label>
+          <label>เลือกโซน <select id="rmInZone"><option value="">เลือกโซน</option></select></label>
+          <label>เลือกตำแหน่ง <select id="rmInSlot"><option value="">เลือกตำแหน่ง</option></select></label>
+          <label>ผู้จัดเก็บ <input id="rmInStorer" maxlength="100" required></label>
+        </div>
+        <div class="rm-incoming-actions"><button type="button" id="rmInTagCamera">📷 สแกนป้าย</button><button type="button" id="rmInLocationCamera">📷 สแกนตำแหน่ง</button><button type="button" id="rmInCameraStop" hidden>ปิดกล้อง</button></div>
+        <div id="rmInCamera" class="qr-camera" hidden></div>
+        <div id="rmInPutawaySummary" class="rm-incoming-summary">รอสแกนป้ายพาเลตและตำแหน่ง</div>
+        <button type="button" id="rmInConfirm" class="rm-incoming-primary" disabled>ยืนยันจัดเก็บ</button>
+        <p id="rmInPutawayStatus" class="qr-feedback" role="status"></p>
+      </section>
+      <section id="rmIncomingHistory" class="rm-incoming-view" hidden>
+        <h3>ทะเบียนป้ายล่าสุดในเครื่องนี้</h3><p id="rmInHistorySummary" class="panel-sub"></p>
+        <div id="rmInHistoryList" class="rm-incoming-history"></div>
+      </section>
+    </div>
+  </div>
+
   <!-- ============ TAB: RECEIVING INTO WAREHOUSE ============ -->
   <div class="tab-pane" id="pane-receive" hidden>
     <div class="panel report-panel-fullbleed" id="receiveReportPanel">
@@ -1732,7 +1789,7 @@ function switchToTab(tab) {
   const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.dataset.tab === tab);
   if (!btn) return;
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b === btn));
-  ['stock', 'bom', 'floorplan', 'qr-labels', 'expired', 'withdraw', 'receive', 'callin', 'stockdiff', 'bomsearch'].forEach(t => {
+  ['stock', 'bom', 'floorplan', 'qr-labels', 'incoming', 'expired', 'withdraw', 'receive', 'callin', 'stockdiff', 'bomsearch'].forEach(t => {
     document.getElementById('pane-' + t).hidden = (t !== tab);
   });
 }
@@ -6077,5 +6134,7 @@ async function initCloudSync() {
 <script src="vendor/qrcode-generator.js"></script>
 <script src="rm-qr-core.js"></script>
 <script src="rm-qr.js"></script>
+<script src="rm-incoming-core.js"></script>
+<script src="rm-incoming.js"></script>
 </body>
 </html>

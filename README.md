@@ -20,7 +20,10 @@ python -m http.server 8080
 
 - `index.html` — หน้า dashboard และ logic ทั้งหมด
 - `pk-template.css` — รูปแบบหน้าจอที่ปรับจาก PK Dashboard ให้ใช้กับข้อมูล RM
+- `rm-incoming.js`, `rm-incoming-core.js`, `rm-incoming.css` — ขั้นตอน QR รับเข้า พิมพ์ป้ายพาเลต และจัดเก็บที่ดัดแปลงจาก PK WMS สำหรับ RM
 - `netlify.toml` — การตั้งค่า deploy และ security headers
+
+ดู [QR-CODE.md](QR-CODE.md) สำหรับวิธีรับเข้าและจัดเก็บด้วย QR
 
 ## หมายเหตุ
 
